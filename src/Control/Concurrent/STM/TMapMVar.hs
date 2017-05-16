@@ -9,6 +9,13 @@ import Control.Concurrent.STM.TVar (TVar, newTVar, modifyTVar', readTVar)
 import Control.Concurrent.STM.TMVar (TMVar, readTMVar, tryReadTMVar, newEmptyTMVar, takeTMVar, tryTakeTMVar, swapTMVar, putTMVar)
 
 
+putForceTMVar :: TMVar a -> a -> STM ()
+putForceTMVar t x = do
+  q <- tryReadTMVar t
+  case q of
+    Nothing -> putTMVar t x
+    Just _  -> () <$ swapTMVar t x
+
 
 newtype TMapMVar k a = TMapMVar
   { getTMapMVar :: TVar (Map k (TMVar a))
@@ -22,7 +29,7 @@ keys :: TMapMVar k a -> STM [k]
 keys (TMapMVar m) = Map.keys <$> readTVar m
 
 peekElems :: TMapMVar k a -> STM [a]
-peekElems t@(TMapMVar m) = do
+peekElems (TMapMVar m) = do
   m' <- readTVar m
   let ts = Map.elems m'
   catMaybes <$> traverse tryReadTMVar ts
@@ -38,7 +45,7 @@ insert t k a = do
 insertForce :: (Ord k) => TMapMVar k a -> k -> a -> STM ()
 insertForce t k a = do
   x <- getTMVar t k
-  void $ swapTMVar x a
+  putForceTMVar x a
 
 
 -- | Blocks, and deletes upon looking it up
@@ -64,7 +71,7 @@ tryObserve t k = do
   tryReadTMVar x
 
 delete :: (Ord k) => TMapMVar k a -> k -> STM ()
-delete t k = do
+delete t k =
   void $ tryLookup t k
 
 
