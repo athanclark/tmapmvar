@@ -4,7 +4,7 @@ import Data.Maybe (catMaybes)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Control.Monad (void)
-import Control.Concurrent.STM (STM)
+import Control.Concurrent.STM (STM, atomically)
 import Control.Concurrent.STM.TVar (TVar, newTVar, modifyTVar', readTVar)
 import Control.Concurrent.STM.TMVar (TMVar, readTMVar, tryReadTMVar, newEmptyTMVar, takeTMVar, tryTakeTMVar, swapTMVar, putTMVar)
 
@@ -36,41 +36,41 @@ peekElems (TMapMVar m) = do
 
 
 -- | Blocks if it's full
-insert :: (Ord k) => TMapMVar k a -> k -> a -> STM ()
+insert :: (Ord k) => TMapMVar k a -> k -> a -> IO ()
 insert t k a = do
   x <- getTMVar t k
-  putTMVar x a
+  atomically $ putTMVar x a
 
 -- | Doesn't Block
-insertForce :: (Ord k) => TMapMVar k a -> k -> a -> STM ()
+insertForce :: (Ord k) => TMapMVar k a -> k -> a -> IO ()
 insertForce t k a = do
   x <- getTMVar t k
-  putForceTMVar x a
+  atomically $ putForceTMVar x a
 
 
 -- | Blocks, and deletes upon looking it up
-lookup :: (Ord k) => TMapMVar k a -> k -> STM a
+lookup :: (Ord k) => TMapMVar k a -> k -> IO a
 lookup t k = do
   x <- getTMVar t k
-  takeTMVar x
+  atomically $ takeTMVar x
 
-tryLookup :: (Ord k) => TMapMVar k a -> k -> STM (Maybe a)
+tryLookup :: (Ord k) => TMapMVar k a -> k -> IO (Maybe a)
 tryLookup t k = do
   x <- getTMVar t k
-  tryTakeTMVar x
+  atomically $ tryTakeTMVar x
 
 -- | Blocks, but doesn't delete when looking it up
-observe :: (Ord k) => TMapMVar k a -> k -> STM a
+observe :: (Ord k) => TMapMVar k a -> k -> IO a
 observe t k = do
   x <- getTMVar t k
-  readTMVar x
+  atomically $ readTMVar x
 
-tryObserve :: (Ord k) => TMapMVar k a -> k -> STM (Maybe a)
+tryObserve :: (Ord k) => TMapMVar k a -> k -> IO (Maybe a)
 tryObserve t k = do
   x <- getTMVar t k
-  tryReadTMVar x
+  atomically $ tryReadTMVar x
 
-delete :: (Ord k) => TMapMVar k a -> k -> STM ()
+delete :: (Ord k) => TMapMVar k a -> k -> IO ()
 delete t k =
   void $ tryLookup t k
 
@@ -78,8 +78,8 @@ delete t k =
 
 -- * Utils
 
-getTMVar :: (Ord k) => TMapMVar k a -> k -> STM (TMVar a)
-getTMVar (TMapMVar m) k = do
+getTMVar :: (Ord k) => TMapMVar k a -> k -> IO (TMVar a)
+getTMVar (TMapMVar m) k = atomically $ do
   m' <- readTVar m
   case Map.lookup k m' of
     Nothing -> do
