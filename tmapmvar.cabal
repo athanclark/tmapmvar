@@ -1,5 +1,5 @@
 name:                tmapmvar
-version:             0.0.2
+version:             0.0.3
 synopsis:            A single-entity stateful Map in STM, similar to tmapchan
 -- description:
 homepage:            https://github.com/athanclark/tmapmvar#readme
