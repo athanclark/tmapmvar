@@ -1,5 +1,5 @@
 name:                tmapmvar
-version:             0.0.0
+version:             0.0.4
 git:                 "git://git.localcooking.com/tooling/tmapmvar.git"
 license:             BSD3
 author:              "Athan Clark"

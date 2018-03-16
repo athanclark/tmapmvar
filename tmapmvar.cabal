@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 37d05bdce7cf86f7cd2e16fb58a73cc02c5a3a91f7a598a4149e72bee36bf8bc
+-- hash: 6dee76e4c802835ab45bbb37cd6c71a032a7d1fc5569bd5c505b4465dd840551
 
 name:           tmapmvar
-version:        0.0.0
+version:        0.0.4
 synopsis:       A single-entity stateful Map in STM, similar to tmapchan
 description:    Please see the README on Github at <https://git.localcooking.com/tooling/tmapmvar#readme>
 author:         Athan Clark
