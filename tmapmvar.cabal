@@ -1,45 +1,63 @@
-name:                tmapmvar
-version:             0.0.3
-synopsis:            A single-entity stateful Map in STM, similar to tmapchan
--- description:
-homepage:            https://github.com/athanclark/tmapmvar#readme
-license:             BSD3
-license-file:        LICENSE
-author:              Athan Clark
-maintainer:          athan.clark@gmail.com
-copyright:           2017 Athan Clark
-category:            Data
-build-type:          Simple
-extra-source-files:  README.md
-cabal-version:       >=1.10
+-- This file has been generated from package.yaml by hpack version 0.21.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 37d05bdce7cf86f7cd2e16fb58a73cc02c5a3a91f7a598a4149e72bee36bf8bc
 
-library
-  hs-source-dirs:      src
-  exposed-modules:     Control.Concurrent.STM.TMapMVar
-                       Control.Concurrent.STM.TMapMVar.Hash
-  build-depends:       base >= 4.8 && < 5
-                     , containers
-                     , hashable
-                     , stm
-                     , unordered-containers
-  default-language:    Haskell2010
+name:           tmapmvar
+version:        0.0.0
+synopsis:       A single-entity stateful Map in STM, similar to tmapchan
+description:    Please see the README on Github at <https://git.localcooking.com/tooling/tmapmvar#readme>
+author:         Athan Clark
+maintainer:     athan.clark@localcooking.com
+copyright:      2018 Local Cooking Inc.
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
 
-test-suite tmapmvar-test
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             Spec.hs
-  build-depends:       base
-                     , tmapmvar
-                     , async
-                     , containers
-                     , QuickCheck
-                     , quickcheck-instances
-                     , stm
-                     , tasty
-                     , tasty-quickcheck
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
-  location: https://github.com/athanclark/tmapmvar
+  type: git
+  location: git://git.localcooking.com/tooling/tmapmvar.git
+
+library
+  exposed-modules:
+      Control.Concurrent.STM.TMapMVar
+      Control.Concurrent.STM.TMapMVar.Hash
+  other-modules:
+      Paths_tmapmvar
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , hashable
+    , stm
+    , unordered-containers
+  default-language: Haskell2010
+
+test-suite tmapmvar-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_tmapmvar
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -threaded -rtsopts -Wall -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , async
+    , base >=4.7 && <5
+    , containers
+    , hashable
+    , quickcheck-instances
+    , stm
+    , tasty
+    , tasty-quickcheck
+    , tmapmvar
+    , unordered-containers
+  default-language: Haskell2010

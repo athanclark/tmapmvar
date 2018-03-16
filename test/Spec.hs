@@ -35,8 +35,9 @@ main =
 insertInEmpty :: Int -> Int -> Property
 insertInEmpty k v = ioProperty $ do
   var <- atomically newTMapMVar
-  TMapMVar.insert var k v
-  v' <- TMapMVar.observe var k
+  v' <- atomically $ do
+    TMapMVar.insert var k v
+    TMapMVar.observe var k
   pure (v == v')
 
 
@@ -44,40 +45,45 @@ insertInFull :: Int -> Int -> Property
 insertInFull k v = ioProperty $ do
   var <- do
     m <- atomically newTMapMVar
-    TMapMVar.insert m k (v-1)
+    atomically $ TMapMVar.insert m k (v-1)
     pure m
   async $ do
     threadDelay 10
-    TMapMVar.delete var k
-  TMapMVar.insert var k v
-  v' <- TMapMVar.lookup var k
+    atomically $ TMapMVar.delete var k
+  v' <- atomically $ do
+    TMapMVar.insert var k v
+    TMapMVar.lookup var k
   pure (v == v')
 
 
 insertForceDoesntBlock :: Int -> Int -> Int -> Property
 insertForceDoesntBlock k v1 v2 = ioProperty $ do
   var <- atomically newTMapMVar
-  TMapMVar.insert var k v1
-  TMapMVar.insertForce var k v2
-  v' <- TMapMVar.lookup var k
+  v' <- atomically $ do
+    TMapMVar.insert var k v1
+    TMapMVar.insertForce var k v2
+    TMapMVar.lookup var k
   pure (v' == v2)
 
 
 emptyAfterLookup :: Int -> Int -> Property
 emptyAfterLookup k v = ioProperty $ do
   var <- atomically newTMapMVar
-  TMapMVar.insert var k v
-  _ <- TMapMVar.lookup var k
-  mV' <- TMapMVar.tryObserve var k
+  mV' <- atomically $ do
+    TMapMVar.insert var k v
+    TMapMVar.delete var k
+    TMapMVar.tryObserve var k
   pure (mV' == Nothing)
 
 
 nonMutativeObserve :: Int -> Int -> Property
 nonMutativeObserve k v = ioProperty $ do
   var <- atomically newTMapMVar
-  TMapMVar.insert var k v
-  v1 <- TMapMVar.observe var k
-  v2 <- TMapMVar.observe var k
+  (v1,v2) <- atomically $ do
+    TMapMVar.insert var k v
+    v1' <- TMapMVar.observe var k
+    v2' <- TMapMVar.observe var k
+    pure (v1',v2')
   pure (v1 == v2 && v2 == v)
 
 
@@ -86,6 +92,6 @@ lookupThenInsert k v = ioProperty $ do
   var <- atomically newTMapMVar
   async $ do
     threadDelay 10
-    TMapMVar.insert var k v
-  v' <- TMapMVar.lookup var k
+    atomically $ TMapMVar.insert var k v
+  v' <- atomically $ TMapMVar.lookup var k
   pure (v' == v)

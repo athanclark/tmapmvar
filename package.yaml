@@ -1,0 +1,51 @@
+name:                tmapmvar
+version:             0.0.0
+git:                 "git://git.localcooking.com/tooling/tmapmvar.git"
+license:             BSD3
+author:              "Athan Clark"
+maintainer:          "athan.clark@localcooking.com"
+copyright:           "2018 Local Cooking Inc."
+
+ghc-options: -Wall
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on Github at <https://git.localcooking.com/tooling/tmapmvar#readme>
+synopsis:            A single-entity stateful Map in STM, similar to tmapchan
+
+dependencies:
+- base >= 4.7 && < 5
+- containers
+- hashable
+- stm
+- unordered-containers
+
+library:
+  source-dirs: src
+
+tests:
+  tmapmvar-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -Wall
+    - -with-rtsopts=-N
+    dependencies:
+    - tmapmvar
+    - async
+    - containers
+    - QuickCheck
+    - quickcheck-instances
+    - stm
+    - tasty
+    - tasty-quickcheck

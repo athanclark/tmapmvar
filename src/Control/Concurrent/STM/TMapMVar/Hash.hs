@@ -5,7 +5,7 @@ import Data.HashMap.Strict (HashMap)
 import Data.Hashable (Hashable)
 import qualified Data.HashMap.Strict as HashMap
 import Control.Monad (void)
-import Control.Concurrent.STM (STM, atomically)
+import Control.Concurrent.STM (STM)
 import Control.Concurrent.STM.TVar (TVar, newTVar, modifyTVar', readTVar)
 import Control.Concurrent.STM.TMVar (TMVar, readTMVar, tryReadTMVar, newEmptyTMVar, takeTMVar, tryTakeTMVar, swapTMVar, putTMVar)
 
@@ -37,41 +37,41 @@ peekElems (TMapMVar m) = do
 
 
 -- | Blocks if it's full
-insert :: (Eq k, Hashable k) => TMapMVar k a -> k -> a -> IO ()
+insert :: (Eq k, Hashable k) => TMapMVar k a -> k -> a -> STM ()
 insert t k a = do
   x <- getTMVar t k
-  atomically $ putTMVar x a
+  putTMVar x a
 
 -- | Doesn't Block
-insertForce :: (Eq k, Hashable k) => TMapMVar k a -> k -> a -> IO ()
+insertForce :: (Eq k, Hashable k) => TMapMVar k a -> k -> a -> STM ()
 insertForce t k a = do
   x <- getTMVar t k
-  atomically $ putForceTMVar x a
+  putForceTMVar x a
 
 
 -- | Blocks, and deletes upon looking it up
-lookup :: (Eq k, Hashable k) => TMapMVar k a -> k -> IO a
+lookup :: (Eq k, Hashable k) => TMapMVar k a -> k -> STM a
 lookup t k = do
   x <- getTMVar t k
-  atomically $ takeTMVar x
+  takeTMVar x
 
-tryLookup :: (Eq k, Hashable k) => TMapMVar k a -> k -> IO (Maybe a)
+tryLookup :: (Eq k, Hashable k) => TMapMVar k a -> k -> STM (Maybe a)
 tryLookup t k = do
   x <- getTMVar t k
-  atomically $ tryTakeTMVar x
+  tryTakeTMVar x
 
 -- | Blocks, but doesn't delete when looking it up
-observe :: (Eq k, Hashable k) => TMapMVar k a -> k -> IO a
+observe :: (Eq k, Hashable k) => TMapMVar k a -> k -> STM a
 observe t k = do
   x <- getTMVar t k
-  atomically $ readTMVar x
+  readTMVar x
 
-tryObserve :: (Eq k, Hashable k) => TMapMVar k a -> k -> IO (Maybe a)
+tryObserve :: (Eq k, Hashable k) => TMapMVar k a -> k -> STM (Maybe a)
 tryObserve t k = do
   x <- getTMVar t k
-  atomically $ tryReadTMVar x
+  tryReadTMVar x
 
-delete :: (Eq k, Hashable k) => TMapMVar k a -> k -> IO ()
+delete :: (Eq k, Hashable k) => TMapMVar k a -> k -> STM ()
 delete t k =
   void $ tryLookup t k
 
@@ -79,8 +79,8 @@ delete t k =
 
 -- * Utils
 
-getTMVar :: (Eq k, Hashable k) => TMapMVar k a -> k -> IO (TMVar a)
-getTMVar (TMapMVar m) k = atomically $ do
+getTMVar :: (Eq k, Hashable k) => TMapMVar k a -> k -> STM (TMVar a)
+getTMVar (TMapMVar m) k = do
   m' <- readTVar m
   case HashMap.lookup k m' of
     Nothing -> do
